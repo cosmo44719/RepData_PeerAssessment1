@@ -1,18 +1,37 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
-```{r}
+
+```r
 unzip("activity.zip")
 rawdata <- read.csv("activity.csv")
 head(rawdata)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
+```r
 cleandata <- na.omit(rawdata)
 head(cleandata)
+```
+
+```
+##     steps       date interval
+## 289     0 2012-10-02        0
+## 290     0 2012-10-02        5
+## 291     0 2012-10-02       10
+## 292     0 2012-10-02       15
+## 293     0 2012-10-02       20
+## 294     0 2012-10-02       25
 ```
 
 
@@ -20,7 +39,8 @@ head(cleandata)
 
 First I calcualte the total number of steps taken per day:
 
-```{r}
+
+```r
 dayselector <- unique(cleandata$date)
 stepsperday <- c()
 for (i in 1:length(dayselector)) {
@@ -29,29 +49,38 @@ for (i in 1:length(dayselector)) {
 head(stepsperday)
 ```
 
+```
+## [1]   126 11352 12116 13294 15420 11015
+```
+
 I will now draw a histogram showing the total number of steps per day
 
-```{r}
+
+```r
 hist(stepsperday, main = "Total steps per day", xlab = "steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
 then I calculate the mean an median of the total number of steps taken per day
 
-```{r}
+
+```r
 meanSteps <-mean(stepsperday)
 medianSteps <- median(stepsperday)
 ```
 
 Thus we have:  
 
-- mean number of steps per day  =  `r format(meanSteps, scientific=FALSE, digits = 0)`
-- median of total steps per day =  `r medianSteps`
+- mean number of steps per day  =  10766
+- median of total steps per day =  10765
 
 ## What is the average daily activity pattern?
 
 I will now draw a time series plot of the 5 minute interval and the number of steps per interval averaged over all days:
 
-```{r}
+
+```r
 fiveminsplit <- split(cleandata, cleandata$interval)
 intervalmean <- c()
 for (idx in 1:length(fiveminsplit)) {
@@ -65,28 +94,33 @@ df_intervalmean$interval <- c(5*1:length(intervalmean))
 plot(df_intervalmean$interval, df_intervalmean$intervalmean, type = "l", xlab = '5 min interval (across 24 hours)', ylab = "mean steps per interval")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 I can now enquire which is the 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps.
 
-```{r}
+
+```r
 maxsteps <- max(df_intervalmean$intervalmean)
 maxinterval <- df_intervalmean$interval[which.max(df_intervalmean$intervalmean)]
 ```
 
-The maximun number of averaged steps is thus `r format(maxsteps, scientific=FALSE, digits=0)` occurring iat the interval `r  maxinterval` minutes.
+The maximun number of averaged steps is thus 206 occurring iat the interval 520 minutes.
 
 ## Imputing missing values
 
 The number of missing values is given computing the follow:
 
-```{r}
+
+```r
 missing <- nrow(rawdata) - nrow(cleandata)
 ```
 
-There are `r missing` interval with missing values ("NA")
+There are 2304 interval with missing values ("NA")
 
 We shall fill these miising intervals with the mean number of steps corresponding to that interval. We will build a distinct dataframe containing data also for missing values. We shall call it completedata.
 
-```{r}
+
+```r
 completedata <- rawdata
 for (i in 1:nrow(completedata)) {
       if(is.na(completedata$steps[i])) {
@@ -103,17 +137,20 @@ for (i in 1:length(dayselector)) {
 hist(completestepsperday, main = "Total steps per day", xlab = "steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
+
 I calculate the new mean and median:
 
-```{r}
+
+```r
 completemeanSteps <-mean(completestepsperday)
 completemedianSteps <- median(completestepsperday)
 ```
 
 In the complete set we have:
 
-- mean number of steps per day  =  `r format(completemeanSteps, scientific=FALSE, digits = 0)`
-- median of total steps per day =  `r completemedianSteps`
+- mean number of steps per day  =  10766
+- median of total steps per day =  10765
 
 giving the same result as before introducinge fake values accounting for the missing values.
 
@@ -123,7 +160,8 @@ giving the same result as before introducinge fake values accounting for the mis
 
 First I will create a new factor variable in the dataset with two variable "weekday" and "weekends" and build a new dataset:
 
-```{r}
+
+```r
 dayType <- c()
 completedata$date <- as.Date(completedata$date)
 
@@ -144,7 +182,8 @@ number of steps taken, averaged across all weekday days or weekend days.
 This will give me an idea of the differences in activity between weekdays and weekends.
 
 
-```{r fig.height=8}
+
+```r
 par(mfrow = c(2,1))
 
 weekends <- subset(completedata_dayType, completedata_dayType$dayType == "weekend")
@@ -175,7 +214,8 @@ for (k in 1:length(weekendsmean)){
 df_weekendsmean <- data.frame(weekendsmean)
 df_weekendsmean$interval <- c(5*1:length(weekendsmean))
 plot(df_weekendsmean$interval, df_weekendsmean$weekendsmean, main = "weekends", type = "l", xlab = '5 min interval', ylab = "mean steps per interval")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
 
 The above plots suggest that in during weekends there is more activity with respects to weekdays in the second part of the day.
